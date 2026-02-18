@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Marvel Dashboard v2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #ff003c;
+      --bg: #050505;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --text: #ffffff;
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Theme Definitions */
+    [data-theme="dark"] {
+      --accent: #00f2ff;
+      --bg: #0a0a0a;
+      --card-bg: rgba(255, 255, 255, 0.02);
+      --text: #ffffff;
+      --border: rgba(255, 255, 255, 0.08);
+    }
+
+    [data-theme="light"] {
+      --accent: #2563eb;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --border: rgba(0, 0, 0, 0.1);
+    }
+
+    body { 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+
+    .marvel-font { font-family: 'Syncopate', sans-serif; text-transform: uppercase; }
+
+    .bg-glow {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at center, var(--accent) 0%, transparent 70%);
+      opacity: 0.15;
+      z-index: -1;
+      transition: background 0.5s ease;
+    }
+
+    .marvel-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      transition: all 0.3s ease;
+    }
+    .marvel-card:hover {
+      border-color: var(--accent);
+    }
+
+    .stat-value {
+      background: linear-gradient(to bottom, var(--text) 40%, #888 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Settings Dropdown */
+    #settingsMenu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 50px;
+      width: 200px;
+      z-index: 50;
+    }
+    #settingsMenu.active { display: block; }
+  </style>
+</head>
+<body class="p-6">
+
+  <div class="bg-glow"></div>
+
+  <div class="fixed top-6 right-6 z-50">
+    <div class="relative">
+        <button onclick="toggleSettings()" class="marvel-card p-3 hover:rotate-90 transition-transform duration-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </button>
+        <div id="settingsMenu" class="marvel-card p-4 space-y-2">
+            <p class="marvel-font text-[10px] text-gray-400 mb-2">Theme auswählen</p>
+            <button onclick="changeTheme('auto')" class="w-full text-left text-sm p-2 hover:bg-white/10 rounded">Auto (System)</button>
+            <button onclick="changeTheme('marvel')" class="w-full text-left text-sm p-2 hover:bg-white/10 rounded">Marvel (Original)</button>
+            <button onclick="changeTheme('dark')" class="w-full text-left text-sm p-2 hover:bg-white/10 rounded">Deep Dark</button>
+            <button onclick="changeTheme('light')" class="w-full text-left text-sm p-2 hover:bg-white/10 rounded">Light Mode</button>
+        </div>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto pt-10">
+    
+    <header class="mb-12 text-center opacity-0" id="header">
+      <div class="inline-block bg-[#ff003c] text-white marvel-font px-4 py-1 text-sm mb-4 tracking-widest theme-accent-bg">
+        Insights
+      </div>
+      <h1 class="text-5xl md:text-7xl marvel-font font-extrabold tracking-tighter mb-2">
+        DATA <span class="text-transparent" style="-webkit-text-stroke: 1px var(--text);">STATION</span>
+      </h1>
+    </header>
+
+    <section class="mb-16 opacity-0" id="search-area">
+      <div class="flex flex-col md:flex-row gap-2 max-w-2xl mx-auto marvel-card p-2">
+        <input id="videoUrl" type="text" placeholder="VIDEO LINK HIER..."
+          class="flex-1 bg-transparent border-none px-6 py-4 outline-none font-bold placeholder-gray-500" />
+        <button onclick="handleLoad()" 
+          class="bg-[#ff003c] hover:bg-white hover:text-black transition-all duration-500 text-white px-8 py-4 rounded-xl marvel-font text-xs tracking-widest theme-accent-bg">
+          Analysieren
+        </button>
+      </div>
+    </section>
+
+    <div id="dashboard" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <div class="lg:col-span-4 space-y-6">
+        <div class="marvel-card p-8 stats-card opacity-0">
+          <p class="marvel-font text-[10px] tracking-[0.3em] text-gray-500 mb-2">Views Total</p>
+          <h2 id="views" class="text-6xl font-extrabold stat-value tracking-tighter">0</h2>
+        </div>
+        
+        <div class="marvel-card p-8 stats-card opacity-0">
+          <p class="marvel-font text-[10px] tracking-[0.3em] text-gray-500 mb-2">Est. Revenue</p>
+          <h2 id="revenue" class="text-4xl font-extrabold text-[#ff003c] theme-accent-text">€ 0.00</h2>
+        </div>
+
+        <div class="marvel-card p-8 stats-card opacity-0">
+          <h3 class="marvel-font text-xs tracking-widest mb-4 border-b border-white/10 pb-2">MetaData</h3>
+          <p id="title" class="font-bold text-xl mb-4 leading-tight">—</p>
+          <div class="flex justify-between text-xs marvel-font text-gray-500">
+            <span id="channel">—</span>
+            <span id="duration" class="opacity-80">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-8">
+        <div class="marvel-card p-3 video-wrapper opacity-0" id="video-container">
+          <div class="aspect-video rounded-xl overflow-hidden bg-black">
+            <iframe id="player" class="w-full h-full border-none" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+          </div>
+          <div class="p-6 flex justify-between items-center">
+            <div class="flex gap-8">
+                <div>
+                    <p class="marvel-font text-[9px] text-gray-500 tracking-widest">Likes</p>
+                    <p id="likes" class="font-bold">0</p>
+                </div>
+                <div>
+                    <p class="marvel-font text-[9px] text-gray-500 tracking-widest">Comments</p>
+                    <p id="comments" class="font-bold">0</p>
+                </div>
+            </div>
+            <a id="videoLink" target="_blank" class="marvel-font text-[10px] bg-white text-black px-4 py-2 rounded-full hover:bg-[#ff003c] hover:text-white transition-colors theme-btn">
+                Watch on YouTube
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+const API_KEY = "AIzaSyCrkPDIxlOX2JCYAIZ-4xsZ6isGGw1H8og";
+
+// Initialisierung
+window.onload = () => {
+    gsap.to("#header", { opacity: 1, y: -20, duration: 1, ease: "power4.out" });
+    gsap.to("#search-area", { opacity: 1, y: -20, duration: 1, delay: 0.3, ease: "power4.out" });
+    
+    // Theme laden
+    const savedTheme = localStorage.getItem('station-theme') || 'auto';
+    changeTheme(savedTheme);
+};
+
+function toggleSettings() {
+    document.getElementById('settingsMenu').classList.toggle('active');
+}
+
+function changeTheme(theme) {
+    const body = document.body;
+    const accentElements = document.querySelectorAll('.theme-accent-bg');
+    const accentTextElements = document.querySelectorAll('.theme-accent-text');
+    
+    if (theme === 'auto') {
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        body.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    } else {
+        body.setAttribute('data-theme', theme);
+    }
+
+    // Farbe der Buttons und Akzente anpassen
+    let accentColor = "#ff003c"; // Default Marvel
+    if (theme === 'dark') accentColor = "#00f2ff";
+    if (theme === 'light') accentColor = "#2563eb";
+
+    accentElements.forEach(el => el.style.backgroundColor = accentColor);
+    accentTextElements.forEach(el => el.style.color = accentColor);
+    
+    localStorage.setItem('station-theme', theme);
+    if(theme !== 'auto') toggleSettings(); // Schließen nach Auswahl
+}
+
+function extractVideoId(url) {
+    const match = url.match(/(v=|youtu.be\/)([a-zA-Z0-9_-]{11})/);
+    return match ? match[2] : null;
+}
+
+async function handleLoad() {
+    const url = document.getElementById('videoUrl').value;
+    const videoId = extractVideoId(url);
+    if (!videoId) return alert('Link ungültig');
+
+    const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${videoId}&key=${API_KEY}`;
+    
+    try {
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+        
+        if (!data.items || data.items.length === 0) throw new Error("Video nicht gefunden");
+        
+        const v = data.items[0];
+
+        document.getElementById('dashboard').classList.remove('hidden');
+        document.getElementById('title').innerText = v.snippet.title;
+        document.getElementById('channel').innerText = v.snippet.channelTitle;
+        document.getElementById('duration').innerText = v.contentDetails.duration.replace('PT','').replace('M',':').replace('S','');
+        
+        // FIX für Fehler 153: origin und widget_referrer hinzufügen
+        const origin = window.location.origin;
+        document.getElementById('player').src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&origin=${origin}&widget_referrer=${origin}`;
+        document.getElementById('videoLink').href = url;
+
+        // Animationen
+        gsap.fromTo(".stats-card", 
+            { opacity: 0, x: -50, scale: 0.9 }, 
+            { opacity: 1, x: 0, scale: 1, duration: 0.8, stagger: 0.2, ease: "elastic.out(1, 0.75)" }
+        );
+
+        gsap.fromTo("#video-container", 
+            { opacity: 0, x: 50 }, 
+            { opacity: 1, x: 0, duration: 1, delay: 0.5, ease: "power4.out" }
+        );
+
+        animateNumber('views', v.statistics.viewCount);
+        animateNumber('likes', v.statistics.likeCount);
+        animateNumber('comments', v.statistics.commentCount);
+        animateNumber('revenue', (v.statistics.viewCount / 1000 * 2), true);
+
+    } catch (err) {
+        alert("Fehler beim Laden der Daten. Ist das Video privat?");
+    }
+}
+
+function animateNumber(id, endValue, isCurrency = false) {
+    const obj = { val: 0 };
+    gsap.to(obj, {
+        val: endValue,
+        duration: 2,
+        ease: "power3.out",
+        onUpdate: () => {
+            if(isCurrency) {
+                document.getElementById(id).innerText = "€ " + obj.val.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            } else {
+                document.getElementById(id).innerText = Math.floor(obj.val).toLocaleString('de-DE');
+            }
+        }
+    });
+}
+</script>
+</body>
+</html>
